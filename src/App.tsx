@@ -1,13 +1,11 @@
-import './App.css'
-import Navbar from './components/Navbar.tsx'
-import MapaHospitais from './components/MapaHospitais.tsx'
+import './styles/App.css'
+import  Home  from './pages/Home.tsx'
 
 function App() {
 
   return (
     <>
-    <Navbar/>
-    <MapaHospitais/>
+    <Home/>
     </>
   )
 }
