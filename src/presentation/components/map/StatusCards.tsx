@@ -1,11 +1,11 @@
 import { Card } from "@/presentation/components/ui/card"
 import { Users, Clock } from "lucide-react";
-import { hospitals } from "./HospitaisLista";
+import { hospitals } from "@/infrastructure/mocks/hospitals.mock";
 
 export default function StatusCards() {
   return (
     <div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="p-4 bg-green-50 border-green-200">
             <div className="flex items-center justify-between">
               <div>
@@ -20,7 +20,7 @@ export default function StatusCards() {
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-4 bg-yellow-50 border-yellow-200">
             <div className="flex items-center justify-between">
               <div>
@@ -35,7 +35,7 @@ export default function StatusCards() {
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-4 bg-red-50 border-red-200">
             <div className="flex items-center justify-between">
               <div>
@@ -51,6 +51,6 @@ export default function StatusCards() {
             </div>
           </Card>
         </div>
-    </div>
-    )
+      </div>
+  )
 }

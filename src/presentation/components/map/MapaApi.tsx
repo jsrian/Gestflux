@@ -1,48 +1,60 @@
-// MapaApi.tsx
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import { useEffect } from "react";
+import Map from "ol/Map";
+import View from "ol/View";
+import TileLayer from "ol/layer/Tile";
+import OSM from "ol/source/OSM";
 
-const icon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import Feature from "ol/Feature";
+import Point from "ol/geom/Point";
+import { Icon, Style } from "ol/style";
+import { fromLonLat } from "ol/proj";
 
-interface MapaApiProps {
-  hospitals: {
-    id: number;
-    name: string;
-    coordinates: { x: number; y: number };
-  }[];
-}
+import type { MapaApiProps } from "@/domain/entities/mapaprops";
 
-export function MapaApi({ hospitals }: MapaApiProps) {
-  const center: [number, number] = [-7.11532, -34.861]; // João Pessoa
+export default function MapaApi({ hospitals }: MapaApiProps) {
+  useEffect(() => {
+    const features = hospitals.map((hospital) => {
+      const marker = new Feature({
+        geometry: new Point(fromLonLat([
+          hospital.coordinates.x,
+          hospital.coordinates.y,
+        ])),
+      });
 
-  return (
-    <MapContainer
-      center={center}
-      zoom={12}
-      scrollWheelZoom={false}
-      style={{ height: "100%", width: "100%" }}
-    >
-      <TileLayer
-        attribution={`&copy; OpenStreetMap contributors`}
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      marker.setStyle(
+        new Style({
+          image: new Icon({
+            src: "/marker.png",
+            scale: 0.1,
+          }),
+        })
+      );
 
-      {hospitals.map((hospital) => (
-        <Marker
-          key={hospital.id}
-          position={[hospital.coordinates.x, hospital.coordinates.y]}
-          icon={icon}
-        >
-          <Popup>{hospital.name}</Popup>
-        </Marker>
-      ))}
-      
-    </MapContainer>
-  );
+      return marker;
+    });
+
+    const markerLayer = new VectorLayer({
+      source: new VectorSource({
+        features,
+      }),
+    });
+
+    const map = new Map({
+      target: "map",
+      layers: [
+        new TileLayer({ source: new OSM() }),
+        markerLayer,
+      ],
+      view: new View({
+        center: fromLonLat([-34.8731, -7.11532]),
+        zoom: 12,
+      }),
+    });
+
+    return () => map.setTarget(undefined);
+  }, [hospitals]);
+
+  return <div id="map" className="w-full h-130 rounded-xl" />;
 }

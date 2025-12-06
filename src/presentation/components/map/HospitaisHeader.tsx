@@ -4,7 +4,7 @@ export default function HospitaisHeader() {
   return (
     <>
       {/* Desktop */}
-      <div className="hidden md:block mb-6">
+      <div className="hidden md:block mb-6 px">
         <h1 className="text-2xl font-semibold text-gray-900 mb-2">
           Hospitais em João Pessoa
         </h1>
@@ -22,7 +22,7 @@ export default function HospitaisHeader() {
         <p className="text-sm text-gray-600">
           Sua localização: Manaíra, João Pessoa - PB
         </p>
-      </div>
+    </div>
     </>
   );
 }

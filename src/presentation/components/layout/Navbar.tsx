@@ -2,6 +2,7 @@ import { Bell, MapPin, Menu, Phone, Search, User } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
+
 export default function Navbar() {
   return (
         <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -11,7 +12,7 @@ export default function Navbar() {
           {/* Logo e Título */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <MapPin className="w-6 h-6 text-white" />
+              <img src="\logo.jpeg" alt="" className="rounded-lg" />
             </div>
             <div>
               <h1 className="font-semibold text-gray-900">Gestflux</h1>

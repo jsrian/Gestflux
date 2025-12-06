@@ -1,6 +1,6 @@
 import { Card } from "@/presentation/components/ui/card"
-import { MapaApi } from "@/presentation/components/map/MapaApi"
-import { hospitals } from "./HospitaisLista";
+import  MapaApi  from "@/presentation/components/map/MapaApi"
+import { hospitals } from "@/infrastructure/mocks/hospitals.mock";
 
 export default function MapaHospitaisMap() {
   return (
