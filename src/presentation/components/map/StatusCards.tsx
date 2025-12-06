@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card"
+import { Card } from "@/presentation/components/ui/card"
 import { Users, Clock } from "lucide-react";
 import { hospitals } from "./HospitaisLista";
 

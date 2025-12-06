@@ -1,5 +1,5 @@
-import Navbar from "@/components/layout/Navbar"
-import MapaHospitais from "@/components/map/MapaHospitais"
+import Navbar from "@/presentation/components/layout/Navbar"
+import MapaHospitais from "@/presentation/components/map/MapaHospitais"
 
 export default function  Home (){
     return (

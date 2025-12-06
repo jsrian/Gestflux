@@ -1,5 +1,5 @@
-import { Card } from "@/components/ui/card"
-import { MapaApi } from "@/features/mapa/MapaApi"
+import { Card } from "@/presentation/components/ui/card"
+import { MapaApi } from "@/presentation/components/map/MapaApi"
 import { hospitals } from "./HospitaisLista";
 
 export default function MapaHospitaisMap() {
