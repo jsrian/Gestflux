@@ -71,6 +71,8 @@ export const hospitals: Hospital[] = [
     coordinates: { x: 55, y: 35 },
     specialties: ["clínica geral", "cardiologia", "gastroenterologia", "urologia"],
     phone: "(83) 2107-2500",
-    distance: "6.5 km"
+    distance: "6.5 kmmm"
   }
 ];
+
+console.log()
