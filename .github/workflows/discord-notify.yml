@@ -34,6 +34,20 @@ jobs:
           # Obter detalhes dos commits
           BEFORE_SHA=$(jq -r '.before // empty' "$GITHUB_EVENT_PATH")
           
+          # Contar commits no push
+          if [ "$BEFORE_SHA" != "" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            COMMIT_COUNT=$(git rev-list --count $BEFORE_SHA..$GITHUB_SHA)
+          else
+            COMMIT_COUNT=1
+          fi
+          
+          # Singular ou plural
+          if [ "$COMMIT_COUNT" -eq 1 ]; then
+            COMMIT_TEXT="commit"
+          else
+            COMMIT_TEXT="commits"
+          fi
+          
           COMMIT_MSG=$(git log -1 --pretty=format:'%s')
           COMMIT_HASH_SHORT=$(git log -1 --pretty=format:'%h')
 
@@ -60,7 +74,7 @@ jobs:
               COMMITS_LIST="[\`$COMMIT_HASH_SHORT\`]($COMMIT_URL) $COMMIT_MSG - $ACTOR"
             fi
             
-            TITLE="[$REPO_NAME:$BRANCH] $COMMIT_COUNT new commit"
+            TITLE="[$REPO_NAME:$BRANCH] $COMMIT_COUNT new $COMMIT_TEXT"
             DESC="$COMMITS_LIST"
             COLOR=5814783
           fi
