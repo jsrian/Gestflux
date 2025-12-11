@@ -9,7 +9,6 @@ export default function MapaHospitaisMap() {
           <div className="w-full h-[500px] rounded-lg overflow-hidden border">
   <MapaApi hospitals={hospitals} />
 </div>
-          {/* Map Legend */}
           <div className="p-3 bg-gray-50 border-t border-gray-200">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
               <div className="flex items-center gap-1">
