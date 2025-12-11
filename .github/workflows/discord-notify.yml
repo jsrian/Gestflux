@@ -84,9 +84,15 @@ jobs:
             --arg desc "$DESC" \
             --arg actor "$ACTOR" \
             --arg avatar "https://github.com/$ACTOR.png" \
+            --arg profile "https://github.com/$ACTOR" \
             --argjson color "$COLOR" \
             '{
               embeds: [{
+                author: {
+                  name: $actor,
+                  icon_url: $avatar,
+                  url: $profile
+                },
                 title: $title,
                 description: $desc,
                 color: $color
