@@ -74,7 +74,7 @@ jobs:
               COMMITS_LIST="[\`$COMMIT_HASH_SHORT\`]($COMMIT_URL) $COMMIT_MSG - $ACTOR"
             fi
             
-            TITLE="[$REPO_NAME:$BRANCH] $COMMIT_COUNT new $COMMIT_TEXT [teste]($COMMIT_URL)"
+            TITLE="<a href=\"$COMMITS_LINK\">[$REPO_NAME:$BRANCH] $COMMIT_COUNT new $COMMIT_TEXT</a>"
             DESC="$COMMITS_LIST"
             COLOR=5814783
           fi
