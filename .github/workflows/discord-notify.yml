@@ -86,7 +86,6 @@ jobs:
             --arg avatar "https://github.com/$ACTOR.png" \
             --argjson color "$COLOR" \
             '{
-              content: $actor,
               embeds: [{
                 title: $title,
                 description: $desc,
