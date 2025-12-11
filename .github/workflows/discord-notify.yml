@@ -63,7 +63,7 @@ jobs:
               COMMITS_LIST="[\`$COMMIT_HASH_SHORT\`]($COMMIT_URL) $COMMIT_MSG - $ACTOR"
             fi
             
-            TITLE="[$REPO_NAME] Pull Request #$PR_NUMBER $ACTION"
+            TITLE="[[$REPO_NAME] Pull Request #$PR_NUMBER $ACTION]($PR_URL)"
             DESC="**$PR_TITLE**\n\n$COMMITS_LIST"
             COLOR=3447003
           else
@@ -74,7 +74,7 @@ jobs:
               COMMITS_LIST="[\`$COMMIT_HASH_SHORT\`]($COMMIT_URL) $COMMIT_MSG - $ACTOR"
             fi
             
-            TITLE="[$REPO_NAME:$BRANCH] $COMMIT_COUNT new $COMMIT_TEXT"
+            TITLE="[[$REPO_NAME:$BRANCH] $COMMIT_COUNT new $COMMIT_TEXT]($COMMIT_URL)"
             DESC="$COMMITS_LIST"
             COLOR=5814783
           fi
