@@ -2,8 +2,9 @@ name: Notificar Discord
 
 on:
   push:
+    
   pull_request:
-    types: [opened, closed]
+    types: [opened, edited, closed, reopened, synchronize]
 
 jobs:
   notify:
@@ -12,6 +13,11 @@ jobs:
     environment: Configure Discord HOOK
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Gerar payload
         run: |
           ACTOR="$GITHUB_ACTOR"
@@ -19,14 +25,50 @@ jobs:
           EVENT_NAME="$GITHUB_EVENT_NAME"
           ACTION=$(jq -r '.action // empty' "$GITHUB_EVENT_PATH")
           PR_URL=$(jq -r '.pull_request.html_url // empty' "$GITHUB_EVENT_PATH")
+          PR_NUMBER=$(jq -r '.pull_request.number // empty' "$GITHUB_EVENT_PATH")
+          PR_TITLE=$(jq -r '.pull_request.title // empty' "$GITHUB_EVENT_PATH")
           COMMIT_URL="https://github.com/$REPO/commit/$GITHUB_SHA"
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          REPO_NAME="${REPO#*/}"
+          
+          # Obter detalhes dos commits
+          BEFORE_SHA=$(jq -r '.before // empty' "$GITHUB_EVENT_PATH")
+          
+          # Contar commits no push
+          if [ "$BEFORE_SHA" != "" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            COMMIT_COUNT=$(git rev-list --count $BEFORE_SHA..$GITHUB_SHA)
+          else
+            COMMIT_COUNT=1
+          fi
+          
+          # Singular ou plural
+          if [ "$COMMIT_COUNT" -eq 1 ]; then
+            COMMIT_TEXT="commit"
+          else
+            COMMIT_TEXT="commits"
+          fi
+          
+          COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+          COMMIT_HASH_SHORT=$(git log -1 --pretty=format:'%h')
 
           if [ "$PR_URL" != "" ]; then
-            TITLE="🔁 Pull Request: $ACTION"
-            DESC="**Autor:** $ACTOR\n🔗 [Ver Pull Request]($PR_URL)"
+            # Mapear ações para português
+            case "$ACTION" in
+              "opened") ACTION_TEXT="aberto" ;;
+              "closed") ACTION_TEXT="fechado" ;;
+              "reopened") ACTION_TEXT="reaberto" ;;
+              "edited") ACTION_TEXT="editado" ;;
+              "synchronize") ACTION_TEXT="atualizado" ;;
+              *) ACTION_TEXT="$ACTION" ;;
+            esac
+            
+            TITLE="[$REPO_NAME] Pull Request #$PR_NUMBER $ACTION_TEXT"
+            DESC="**$PR_TITLE**\n🔗 [Ver Pull Request]($PR_URL) - $ACTOR"
+            COLOR=3447003
           else
-            TITLE="📌 Novo Push"
-            DESC="**Autor:** $ACTOR\n🔗 [Ver Commit]($COMMIT_URL)"
+            TITLE="[$REPO_NAME:$BRANCH] $COMMIT_COUNT new $COMMIT_TEXT"
+            DESC="[\`$COMMIT_HASH_SHORT\`]($COMMIT_URL) $COMMIT_MSG - $ACTOR"
+            COLOR=5814783
           fi
 
           jq -n \
@@ -34,12 +76,13 @@ jobs:
             --arg desc "$DESC" \
             --arg actor "$ACTOR" \
             --arg avatar "https://github.com/$ACTOR.png" \
+            --argjson color "$COLOR" \
             '{
+              content: $actor,
               embeds: [{
                 title: $title,
                 description: $desc,
-                author: { name: $actor, icon_url: $avatar },
-                color: 5814783
+                color: $color
               }]
             }' > payload.json
 
