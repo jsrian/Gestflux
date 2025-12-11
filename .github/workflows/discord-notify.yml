@@ -71,10 +71,10 @@ jobs:
             if [ "$BEFORE_SHA" != "" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
               COMMITS_LIST=$(git log --pretty=format:"[\`%h\`](https://github.com/$REPO/commit/%H) %s - %an" $BEFORE_SHA..$GITHUB_SHA)
             else
-              COMMITS_LIST="[\`$COMMIT_HASH_SHORT\`]($COMMIT_URL) $COMMIT_MSG - $ACTOR"
+              COMMITS_LIST="[$COMMIT_HASH_SHORT]($COMMIT_URL) $COMMIT_MSG - $ACTOR"
             fi
             
-            TITLE="[\`[$REPO_NAME:$BRANCH] $COMMIT_COUNT new $COMMIT_TEXT\`]($COMMIT_URL)"
+            TITLE="[$REPO_NAME:$BRANCH $COMMIT_COUNT new $COMMIT_TEXT]($COMMIT_URL)"
             DESC="$COMMITS_LIST"
             COLOR=5814783
           fi
