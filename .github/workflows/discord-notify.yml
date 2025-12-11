@@ -8,55 +8,44 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+
+    environment: Configure Discord HOOK
+
     steps:
-      - name: Enviar notificação estilizada ao Discord
+      - name: Gerar payload
         run: |
-          EVENT_TYPE="$GITHUB_EVENT_NAME"
           ACTOR="$GITHUB_ACTOR"
           REPO="$GITHUB_REPOSITORY"
-          COMMIT_URL="https://github.com/$REPO/commit/$GITHUB_SHA"
+          EVENT_NAME="$GITHUB_EVENT_NAME"
+          ACTION=$(jq -r '.action // empty' "$GITHUB_EVENT_PATH")
           PR_URL=$(jq -r '.pull_request.html_url // empty' "$GITHUB_EVENT_PATH")
-          
-          # Escolher o texto principal dependendo se é push ou PR
-          if [ "$EVENT_TYPE" = "push" ]; then
-            TITLE="📌 Novo Push no Repositório"
-            DESCRIPTION="**Usuário:** $ACTOR fez um push em **$REPO**.\n🔗 [Ver Commit]($COMMIT_URL)"
+          COMMIT_URL="https://github.com/$REPO/commit/$GITHUB_SHA"
+
+          if [ "$PR_URL" != "" ]; then
+            TITLE="🔁 Pull Request: $ACTION"
+            DESC="**Autor:** $ACTOR\n🔗 [Ver Pull Request]($PR_URL)"
           else
-            ACTION=$(jq -r '.action' "$GITHUB_EVENT_PATH")
-            if [ "$ACTION" = "opened" ]; then
-              TITLE="🆕 Novo Pull Request Aberto"
-            elif [ "$ACTION" = "closed" ]; then
-              TITLE="🔐 Pull Request Fechado"
-            else
-              TITLE="📣 Atualização no Pull Request"
-            fi
-            DESCRIPTION="**Usuário:** $ACTOR interagiu com um Pull Request em **$REPO**.\n🔗 [Abrir PR]($PR_URL)"
+            TITLE="📌 Novo Push"
+            DESC="**Autor:** $ACTOR\n🔗 [Ver Commit]($COMMIT_URL)"
           fi
 
-          JSON=$(jq -n \
+          jq -n \
             --arg title "$TITLE" \
-            --arg description "$DESCRIPTION" \
+            --arg desc "$DESC" \
             --arg actor "$ACTOR" \
             --arg avatar "https://github.com/$ACTOR.png" \
             '{
-              "embeds": [
-                {
-                  "title": $title,
-                  "description": $description,
-                  "color": 5814783,
-                  "author": {
-                    "name": $actor,
-                    "icon_url": $avatar
-                  },
-                  "timestamp": (now | todate)
-                }
-              ]
-            }'
-          )
+              embeds: [{
+                title: $title,
+                description: $desc,
+                author: { name: $actor, icon_url: $avatar },
+                color: 5814783
+              }]
+            }' > payload.json
 
-          echo "$JSON"
-
+      - name: Enviar para o Discord
+        run: |
           curl -X POST \
             -H "Content-Type: application/json" \
-            -d "$JSON" \
-            ${{ secrets.DISCORDHOOK }}
+            --data @payload.json \
+            "${{ secrets.DISCORDHOOK }}"
