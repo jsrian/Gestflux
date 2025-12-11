@@ -1,0 +1,51 @@
+name: Notificar Discord
+
+on:
+  push:
+  pull_request:
+    types: [opened, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    environment: Configure Discord HOOK
+
+    steps:
+      - name: Gerar payload
+        run: |
+          ACTOR="$GITHUB_ACTOR"
+          REPO="$GITHUB_REPOSITORY"
+          EVENT_NAME="$GITHUB_EVENT_NAME"
+          ACTION=$(jq -r '.action // empty' "$GITHUB_EVENT_PATH")
+          PR_URL=$(jq -r '.pull_request.html_url // empty' "$GITHUB_EVENT_PATH")
+          COMMIT_URL="https://github.com/$REPO/commit/$GITHUB_SHA"
+
+          if [ "$PR_URL" != "" ]; then
+            TITLE="🔁 Pull Request: $ACTION"
+            DESC="**Autor:** $ACTOR\n🔗 [Ver Pull Request]($PR_URL)"
+          else
+            TITLE="📌 Novo Push"
+            DESC="**Autor:** $ACTOR\n🔗 [Ver Commit]($COMMIT_URL)"
+          fi
+
+          jq -n \
+            --arg title "$TITLE" \
+            --arg desc "$DESC" \
+            --arg actor "$ACTOR" \
+            --arg avatar "https://github.com/$ACTOR.png" \
+            '{
+              embeds: [{
+                title: $title,
+                description: $desc,
+                author: { name: $actor, icon_url: $avatar },
+                color: 5814783
+              }]
+            }' > payload.json
+
+      - name: Enviar para o Discord
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            --data @payload.json \
+            "${{ secrets.DISCORDHOOK }}"
