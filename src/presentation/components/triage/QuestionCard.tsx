@@ -13,7 +13,7 @@ export default function QuestionCard({ question, onAnswer }: Props) {
       <h2 className="text-lg font-semibold mb-4">{question.text}</h2>
 
       <div className="flex flex-col gap-3">
-        {question.options.map(option => (
+        {question.options.map((option) => (
           <Button
             key={option.label}
             variant="outline"
