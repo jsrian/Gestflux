@@ -1,17 +1,32 @@
 import { Card } from "@/presentation/components/ui/card"
 import { Users, Clock } from "lucide-react";
-import { hospitals } from "@/infrastructure/mocks/hospitals.mock";
 
-export default function StatusCards() {
+// Vamos definir uma interface simples para o que este componente precisa saber
+interface HospitalStatusData {
+  status: 'low' | 'medium' | 'high';
+}
+
+interface StatusCardsProps {
+  hospitals: HospitalStatusData[];
+}
+
+export default function StatusCards({ hospitals }: StatusCardsProps) {
+  
+  // Lógica de contagem baseada na lista recebida
+  const emptyCount = hospitals.filter(h => h.status === 'low').length;
+  const moderateCount = hospitals.filter(h => h.status === 'medium').length;
+  const fullCount = hospitals.filter(h => h.status === 'high').length;
+
   return (
     <div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Card Vazios */}
           <Card className="p-4 bg-green-50 border-green-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-green-700 font-medium">Hospitais Vazios</p>
                 <p className="text-2xl font-semibold text-green-900 mt-1">
-                  {hospitals.filter(h => h.status === 'low').length}
+                  {emptyCount}
                 </p>
                 <p className="text-xs text-green-600 mt-1">Atendimento rápido</p>
               </div>
@@ -21,12 +36,13 @@ export default function StatusCards() {
             </div>
           </Card>
 
+          {/* Card Moderados */}
           <Card className="p-4 bg-yellow-50 border-yellow-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-yellow-700 font-medium">Filas Moderadas</p>
                 <p className="text-2xl font-semibold text-yellow-900 mt-1">
-                  {hospitals.filter(h => h.status === 'medium').length}
+                  {moderateCount}
                 </p>
                 <p className="text-xs text-yellow-600 mt-1">Espera moderada</p>
               </div>
@@ -36,12 +52,13 @@ export default function StatusCards() {
             </div>
           </Card>
 
+          {/* Card Cheios */}
           <Card className="p-4 bg-red-50 border-red-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-red-700 font-medium">Hospitais Cheios</p>
                 <p className="text-2xl font-semibold text-red-900 mt-1">
-                  {hospitals.filter(h => h.status === 'high').length}
+                  {fullCount}
                 </p>
                 <p className="text-xs text-red-600 mt-1">Alta demanda</p>
               </div>

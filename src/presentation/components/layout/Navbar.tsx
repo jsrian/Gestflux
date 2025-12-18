@@ -1,7 +1,5 @@
-import { Bell, MapPin, Menu, Phone, Search, User } from "lucide-react";
+import { Bell, MapPin, Menu, Phone, User } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-
 
 export default function Navbar() {
   return (
@@ -20,16 +18,6 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Barra de Pesquisa - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input 
-                placeholder="Buscar hospital ou especialidade..." 
-                className="pl-10 bg-gray-50 border-gray-200"
-              />
-            </div>
-          </div>
 
           {/* Menu Desktop */}
           <div className="hidden md:flex items-center gap-4">
@@ -59,14 +47,5 @@ export default function Navbar() {
       </div>
 
       {/* Barra de Pesquisa Mobile */}
-      <div className="md:hidden px-4 pb-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input 
-            placeholder="Buscar hospital..." 
-            className="pl-10 bg-gray-50 border-gray-200"
-          />
-        </div>
-      </div>
     </nav>
 )}

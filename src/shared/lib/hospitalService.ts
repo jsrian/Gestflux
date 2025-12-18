@@ -22,7 +22,8 @@ export const fetchHospitalsFromOSM = async (extent: number[]): Promise<Hospital[
   `;
 
   try {
-const response = await fetch("https://overpass-api.de/api/interpreter", {      method: "POST",
+    const response = await fetch("[https://overpass-api.de/api/interpreter](https://overpass-api.de/api/interpreter)", {
+      method: "POST",
       body: query,
     });
 

@@ -1,3 +1,29 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "leaflet/dist/leaflet.css";
+
+/* Customização do OpenLayers */
+.ol-control button {
+  background-color: #12726E !important; 
+  color: white !important;
+  border-radius: 50% !important; 
+  width: 2.5em !important;
+  height: 2.5em !important;
+  margin: 2px !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: background-color 0.2s;
+}
+
+.ol-control button:hover {
+  background-color: #0d5552 !important; 
+}
+
+.ol-zoom {
+  top: 1rem !important;
+  left: 1rem !important;
+  background: transparent !important;
+}
+
+.ol-attribution {
+  display: none; 
+}

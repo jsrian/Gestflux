@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Principal() {
   return (
     <div
@@ -14,8 +16,8 @@ export default function Principal() {
       <div
         style={{
           display: "flex",
-          justifyContent: "center", // centraliza horizontalmente
-          marginTop: "20px", // ajusta distância do topo
+          justifyContent: "center",
+          marginTop: "20px",
           fontWeight: "bold",
           fontSize: 24,
           lineHeight: "22px",
@@ -33,7 +35,8 @@ export default function Principal() {
           borderRadius: 50,
         }}
       >
-        <img src="\logov2.png" alt="" className="rounded-lg" />
+        {/* Caminhos de imagem */}
+        <img src="/logov2.png" alt="Logo" className="rounded-lg" />
       </div>
 
       {/* Botões */}
@@ -46,8 +49,9 @@ export default function Principal() {
           gap: 20,
         }}
       >
-        <a
-          href="/perguntas"
+        {/* Usando o componente Link */}
+        <Link
+          to="/perguntas"
           style={{
             backgroundColor: "white",
             color: "#1b756f",
@@ -62,7 +66,7 @@ export default function Principal() {
           }}
         >
           EMERGÊNCIA
-        </a>
+        </Link>
 
         <button
           style={{
