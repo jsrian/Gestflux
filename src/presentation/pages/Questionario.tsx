@@ -6,7 +6,7 @@ import { calculateTriageResult } from "@/domain/services/triage.service";
 import ProgressBar from "@/presentation/components/triage/ProgressBar";
 import QuestionCard from "@/presentation/components/triage/QuestionCard";
 import ResultCard from "@/presentation/components/triage/ResultCard";
-
+import NavbarV2 from "@/presentation/components/layout/NavBarV2";
 
 export default function Questionario() {
   const [current, setCurrent] = useState(0);
@@ -24,24 +24,45 @@ export default function Questionario() {
     }
   }
 
-  // 🔴 É EXATAMENTE AQUI 👇 (ANTES DO RETURN)
   if (finished) {
     const result = calculateTriageResult(score);
-    return <ResultCard result={result} />;
+    return (
+      <>
+        <NavbarV2 />
+        <div className="min-h-screen pt-16 flex flex-col items-center justify-center px-4 space-y-6">
+          <ResultCard result={result} />
+
+          <a
+            href="/mapa"
+            className="
+      bg-[#1b756f]
+      text-white
+      px-8
+      py-3
+      rounded-full
+      font-bold
+      text-center
+      inline-block
+    "
+          >
+            Ver Hospitais
+          </a>
+        </div>
+      </>
+    );
   }
 
-  // ⬇️ RETURN NORMAL (quando ainda NÃO terminou)
   return (
-    <div className="max-w-xl mx-auto mt-10">
-      <ProgressBar
-        current={current}
-        total={questions.length}
-      />
+    <>
+      <NavbarV2 />
 
-      <QuestionCard
-        question={questions[current]}
-        onAnswer={handleAnswer}
-      />
-    </div>
+      <div className="min-h-screen pt-16 flex flex-col justify-center px-4">
+        <div className="w-full max-w-md md:max-w-xl mx-auto space-y-6">
+          <ProgressBar current={current} total={questions.length} />
+
+          <QuestionCard question={questions[current]} onAnswer={handleAnswer} />
+        </div>
+      </div>
+    </>
   );
 }

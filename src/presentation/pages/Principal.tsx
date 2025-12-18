@@ -1,5 +1,3 @@
-import Navbar from "@/presentation/components/layout/Navbar";
-
 export default function Principal() {
   return (
     <div
@@ -19,7 +17,7 @@ export default function Principal() {
           justifyContent: "center", // centraliza horizontalmente
           marginTop: "20px", // ajusta distância do topo
           fontWeight: "bold",
-          fontSize: 20,
+          fontSize: 24,
           lineHeight: "22px",
         }}
       >
