@@ -1,7 +1,6 @@
 import { transformExtent } from 'ol/proj';
 // IMPORTANTE: Agora importamos o tipo do Domínio, não definimos aqui!
 import type { Hospital } from "@/domain/entities/Hospital"; 
-import type { BoundingBox } from "@/domain/repositories/IHospitalRepository";
 
 const OVERPASS_API_URL = "https://overpass-api.de/api/interpreter";
 
