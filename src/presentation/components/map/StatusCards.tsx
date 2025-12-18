@@ -1,20 +1,17 @@
 import { Card } from "@/presentation/components/ui/card"
 import { Users, Clock } from "lucide-react";
-
-interface HospitalStatusData {
-  status: 'low' | 'medium' | 'high';
-}
+import type { EnrichedHospital } from "@/domain/entities/Hospital";
 
 interface StatusCardsProps {
-  hospitals: HospitalStatusData[];
+  hospitals: EnrichedHospital[];
 }
 
 export default function StatusCards({ hospitals }: StatusCardsProps) {
   
-  // Lógica de contagem baseada na lista recebida
-  const emptyCount = hospitals.filter(h => h.status === 'low').length;
-  const moderateCount = hospitals.filter(h => h.status === 'medium').length;
-  const fullCount = hospitals.filter(h => h.status === 'high').length;
+  const emptyCount = hospitals.filter(h => h.status === 'empty').length;
+  const moderateCount = hospitals.filter(h => h.status === 'moderate').length;
+  
+  const fullCount = hospitals.filter(h => h.status === 'full').length;
 
   return (
     <div>

@@ -2,7 +2,7 @@ import { memo } from "react";
 import { MapPin, Navigation, Clock, Users, Map as MapIcon } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import type { EnrichedHospital } from "@/shared/lib/hospitalService";
+import type { EnrichedHospital } from "@/domain/entities/Hospital";
 import { getStatusInfo } from "@/shared/lib/utils";
 
 const ORIGEM_MANAIRA = { lat: -7.100608, lon: -34.837581 };

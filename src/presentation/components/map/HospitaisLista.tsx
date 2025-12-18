@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Navigation } from "lucide-react"; 
 import { Badge } from "../ui/badge";
-import type { EnrichedHospital } from "@/shared/lib/hospitalService";
+import type { EnrichedHospital } from "@/domain/entities/Hospital";
 import HospitalCard from "./HospitalCard";
 
 interface HospitaisListaProps {

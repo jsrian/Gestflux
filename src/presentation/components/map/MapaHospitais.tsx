@@ -4,7 +4,7 @@ import HospitaisHeader from "./HospitaisHeader";
 import HospitaisLista from "./HospitaisLista";
 import StatusCards from "./StatusCards";
 import MapaHospitaisMap from "./MapaHospitaisMap";
-import type { EnrichedHospital } from "@/shared/lib/hospitalService";
+import type { EnrichedHospital } from "@/domain/entities/Hospital";
 
 export default function MapaHospitais() {
   const [hospitalsList, setHospitalsList] = useState<EnrichedHospital[]>([]);
@@ -22,7 +22,7 @@ export default function MapaHospitais() {
       <HospitaisHeader  />
 
       {/* Alerta de Urgência Alta */}
-      {urgencyParam === 'high' && (
+      {urgencyParam === 'full' && (
         <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mt-4 mb-6 flex items-center gap-3 animate-pulse ">
           <div className="w-4 h-4 rounded-full bg-red-600 "></div>
           <div>
@@ -33,7 +33,7 @@ export default function MapaHospitais() {
       )}
 
       {/* Alerta de Urgência Média */}
-      {urgencyParam === 'medium' && (
+      {urgencyParam === 'moderate' && (
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg mt-4 mb-6 flex items-center gap-3">
           <div className="w-4 h-4 rounded-full bg-yellow-600" ></div>
           <p className="text-sm font-medium shadow-xl">Recomendamos evitar hospitais cheios.</p>
