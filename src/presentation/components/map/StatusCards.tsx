@@ -1,7 +1,6 @@
 import { Card } from "@/presentation/components/ui/card"
 import { Users, Clock } from "lucide-react";
 
-// Vamos definir uma interface simples para o que este componente precisa saber
 interface HospitalStatusData {
   status: 'low' | 'medium' | 'high';
 }

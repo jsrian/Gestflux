@@ -3,7 +3,7 @@ import MapaHospitais from "@/presentation/components/map/MapaHospitais";
 
 export default function Home() {
   return (
-    <div>
+    <div className="">
       <Navbar />
       <MapaHospitais />
     </div>

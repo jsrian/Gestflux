@@ -14,7 +14,7 @@ export default function Navbar2() {
         z-50
       "
     >
-      <h1 className="text-white font-bold text-2xl">Gestflux</h1>
+      <h1 className="text-white font-bold text-2xl">GestFlux</h1>
     </nav>
   );
 }

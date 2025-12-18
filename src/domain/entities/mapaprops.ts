@@ -1,4 +1,4 @@
-import type { Hospital } from "@/domain/entities/hospital.entity";
+import type { Hospital } from "@/domain/entities/Hospital";
 
 export interface MapaApiProps {
   hospitals: Hospital[];

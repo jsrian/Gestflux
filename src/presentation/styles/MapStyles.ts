@@ -2,9 +2,9 @@ import { Style, Circle, Fill, Stroke, Text } from 'ol/style';
 
 export const createHospitalStyle = (status: string) => {
   const colorMap: Record<string, string> = {
-    low: '#22c55e',    
-    medium: '#eab308', 
-    high: '#ef4444',   
+    empty: '#22c55e',    
+    moderate: '#eab308', 
+    full: '#ef4444',   
     default: '#94a3b8'
   };
 

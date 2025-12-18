@@ -1,4 +1,4 @@
-import { Bell, MapPin, Menu, Phone, User } from "lucide-react";
+import { Bell, Menu, User } from "lucide-react";
 import { Button } from "../ui/button";
 
 export default function Navbar() {
@@ -18,17 +18,8 @@ export default function Navbar() {
             </div>
           </div>
 
-
           {/* Menu Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-              <MapPin className="w-4 h-4 mr-2" />
-              Hospitais
-            </Button>
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-              <Phone className="w-4 h-4 mr-2" />
-              Emergência
-            </Button>
             <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
               <Bell className="w-5 h-5" />
             </Button>
