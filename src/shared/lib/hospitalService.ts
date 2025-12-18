@@ -1,49 +1,57 @@
-import { transformExtent } from 'ol/proj';
+import type { Hospital } from '../../presentation/components/map/MapaApi';
 
-export interface Hospital {
-  id: number;
-  name: string;
-  coordinates: { x: number; y: number };
+// Definição do tipo enriquecido (movido para cá para ser reutilizável)
+export interface EnrichedHospital extends Hospital {
+  status: 'low' | 'medium' | 'high';
+  queueSize: number;
+  waitingTime: string;
+  distance: string;
+  address: string;
+  specialties: string[];
 }
 
-export const fetchHospitalsFromOSM = async (extent: number[]): Promise<Hospital[]> => {
-  const extentLonLat = transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
+// 1. Função Pura de Cálculo de Distância (Haversine)
+export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): string => {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  if (distance < 1) {
+    return `${Math.round(distance * 1000)} m`;
+  }
+  return `${distance.toFixed(1)} km`;
+};
+
+// 2. Lógica de Negócio: Enriquecer os dados
+export const enrichHospitalData = (hospital: Hospital, userLat: number, userLon: number): EnrichedHospital => {
+  const statuses: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
+  const status = statuses[Math.floor(Math.random() * statuses.length)];
   
-  const [west, south, east, north] = extentLonLat;
+  const realDistance = calculateDistance(userLat, userLon, hospital.coordinates.y, hospital.coordinates.x);
 
-  const query = `
-    [out:json][timeout:25];
-    (
-      node["amenity"="hospital"](${south},${west},${north},${east});
-      way["amenity"="hospital"](${south},${west},${north},${east});
-      relation["amenity"="hospital"](${south},${west},${north},${east});
-    );
-    out center;
-  `;
+  return {
+    ...hospital,
+    status,
+    queueSize: Math.floor(Math.random() * 20),
+    waitingTime: "30 min",
+    distance: realDistance,
+    address: hospital.address,
+    specialties: ["Geral", "Trauma"]
+  };
+};
 
-  try {
-    const response = await fetch("[https://overpass-api.de/api/interpreter](https://overpass-api.de/api/interpreter)", {
-      method: "POST",
-      body: query,
-    });
-
-    const data = await response.json();
-
-    return data.elements.map((element: any) => {
-      const lat = element.lat || element.center?.lat;
-      const lon = element.lon || element.center?.lon;
-
-      return {
-        id: element.id,
-        name: element.tags.name || "Hospital sem nome",
-        coordinates: {
-          x: lon,
-          y: lat,
-        },
-      };
-    });
-  } catch (error) {
-    console.error("Erro ao buscar hospitais:", error);
-    return [];
+// 3. Helper visual para cor (Opcional mover pra cá, mas ajuda a limpar)
+export const getPinColor = (status: string) => {
+  switch (status) {
+    case 'low': return '#22c55e';    
+    case 'medium': return '#eab308'; 
+    case 'high': return '#ef4444';   
+    default: return '#94a3b8';
   }
 };

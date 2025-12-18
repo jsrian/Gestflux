@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, memo } from 'react';
+import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import { Card } from "@/presentation/components/ui/card";
-import { fetchHospitalsFromOSM, type Hospital } from './MapaApi';
 import { Loader2 } from "lucide-react"; 
 
 import 'ol/ol.css';
@@ -14,69 +13,39 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
-import { Style, Circle, Fill, Stroke, Text } from 'ol/style';
 
-// --- COORDENADAS FIXAS (MANAÍRA) ---
+// Imports de Lógica e Estilo
+import { fetchHospitalsFromOSM } from './MapaApi';
+import { enrichHospitalData, type EnrichedHospital } from '@/shared/lib/hospitalService'; 
+import { createHospitalStyle, createUserStyle } from '@/shared/lib/MapStyles'; // (Se tiver separado o arquivo)
+
 const USER_FIXED_LOCATION = [-34.837581, -7.100608]; 
 const MAP_STYLE_LIGHT = 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
-
-export interface EnrichedHospital extends Hospital {
-  status: 'low' | 'medium' | 'high';
-  queueSize: number;
-  waitingTime: string;
-  distance: string;
-  address: string;
-  specialties: string[];
-}
 
 interface MapaProps {
   onHospitalsFound?: (hospitals: EnrichedHospital[]) => void;
 }
 
 function MapaHospitaisMapComponent({ onHospitalsFound }: MapaProps) {
+  // --- Refs e States ---
   const mapElement = useRef<HTMLDivElement>(null);
   const tooltipElement = useRef<HTMLDivElement>(null);
-  const [hospitals, setHospitals] = useState<EnrichedHospital[]>([]);
-  
-  // Estado de Loading
-  const [isLoading, setIsLoading] = useState(false);
-  
   const mapRef = useRef<Map | null>(null);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const hospitalSourceRef = useRef<VectorSource>(new VectorSource());
   
+  const [hospitals, setHospitals] = useState<EnrichedHospital[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // --- Lógica de Dados ---
-  const enrichHospitalData = (hospital: Hospital): EnrichedHospital => {
-    const statuses: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    return {
-      ...hospital,
-      status,
-      queueSize: Math.floor(Math.random() * 20),
-      waitingTime: "30 min",
-      distance: "1.2 km",
-      address: "Endereço via OSM",
-      specialties: ["Geral", "Trauma"]
-    };
-  };
-
-  const getPinColor = (status: string) => {
-    switch (status) {
-      case 'low': return '#22c55e';    
-      case 'medium': return '#eab308'; 
-      case 'high': return '#ef4444';   
-      default: return '#94a3b8';
-    }
-  };
-
+  // --- 1. INICIALIZAÇÃO DO MAPA (Executa 1 vez) ---
   useEffect(() => {
-    if (mapRef.current) return; 
-    if (!mapElement.current) return;
+    if (mapRef.current || !mapElement.current) return;
 
     const centerWebMercator = fromLonLat(USER_FIXED_LOCATION);
-    const hospitalSource = new VectorSource(); 
     const userSource = new VectorSource();
 
+    // Configura Overlay (Tooltip)
     const overlay = new Overlay({
       element: tooltipElement.current!,
       offset: [0, -10],
@@ -84,35 +53,34 @@ function MapaHospitaisMapComponent({ onHospitalsFound }: MapaProps) {
       stopEvent: false,
     });
 
+    // Instancia o Mapa
     const map = new Map({
       target: mapElement.current,
       layers: [
-        new TileLayer({
-          source: new XYZ({ url: MAP_STYLE_LIGHT, attributions: '© CartoDB' }),
-        }),
-        new VectorLayer({ source: hospitalSource }), 
+        new TileLayer({ source: new XYZ({ url: MAP_STYLE_LIGHT, attributions: '© CartoDB' }) }),
+        new VectorLayer({ source: hospitalSourceRef.current }), // Usa a ref da source
         new VectorLayer({ source: userSource, zIndex: 9999 }), 
       ],
       overlays: [overlay],
-      view: new View({
-        center: centerWebMercator,
-        zoom: 15,
-        minZoom: 4,
-      }),
+      view: new View({ center: centerWebMercator, zoom: 15, minZoom: 4 }),
     });
 
     mapRef.current = map;
 
-    // --- Interação: Tooltip ---
+    // Configura Pino do Usuário
+    const userFeature = new Feature({ geometry: new Point(centerWebMercator), name: "Sua Localização" });
+    userFeature.setStyle(createUserStyle()); // Usa o helper visual
+    userSource.addFeature(userFeature);
+
+    // Configura Eventos de Mouse (Tooltip)
     map.on('pointermove', (evt) => {
-      const feature = map.forEachFeatureAtPixel(evt.pixel, (feature) => feature);
+      const feature = map.forEachFeatureAtPixel(evt.pixel, (f) => f);
       if (feature && feature.get('name') !== 'Sua Localização') {
-        const coordinate = evt.coordinate;
         if (tooltipElement.current) {
           tooltipElement.current.innerHTML = feature.get('name');
           tooltipElement.current.style.display = 'block';
         }
-        overlay.setPosition(coordinate);
+        overlay.setPosition(evt.coordinate);
         mapElement.current!.style.cursor = 'pointer';
       } else {
         if (tooltipElement.current) tooltipElement.current.style.display = 'none';
@@ -120,101 +88,99 @@ function MapaHospitaisMapComponent({ onHospitalsFound }: MapaProps) {
       }
     });
 
-    // --- Pino "Você" ---
-    const userFeature = new Feature({ geometry: new Point(centerWebMercator), name: "Sua Localização" });
-    userFeature.setStyle(new Style({
-        image: new Circle({ radius: 10, fill: new Fill({ color: '#2563eb' }), stroke: new Stroke({ color: 'white', width: 4 }) }),
-        text: new Text({ text: 'VOCÊ', offsetY: -20, font: 'bold 14px sans-serif', fill: new Fill({ color: '#1e3a8a' }), stroke: new Stroke({ color: 'white', width: 3 }) })
-    }));
-    userSource.addFeature(userFeature);
-
-    // --- Função de Busca (Revertida para padrão) ---
-    const loadHospitals = async () => {
-      if (!mapRef.current) return;
-      map.updateSize();
-      
-      const size = map.getSize();
-      if (!size) {
-        setIsLoading(false);
-        return;
-      }
-
-      const view = map.getView();
-      const extent = view.calculateExtent(size);
-      
-      try {
-        const rawData = await fetchHospitalsFromOSM(extent);
-        const enrichedData = rawData.map(enrichHospitalData);
-        
-        if (!mapRef.current) return;
-        
-        setHospitals(enrichedData); 
-        if (onHospitalsFound) onHospitalsFound(enrichedData);
-        
-        hospitalSource.clear(); 
-
-        // Cria pinos para TODOS os dados que chegaram
-        const features = enrichedData.map((hospital) => {
-            const feature = new Feature({
-              geometry: new Point(fromLonLat([hospital.coordinates.x, hospital.coordinates.y])),
-              name: hospital.name,
-            });
-            feature.setStyle(
-              new Style({
-                image: new Circle({
-                  radius: 8,
-                  fill: new Fill({ color: getPinColor(hospital.status) }),
-                  stroke: new Stroke({ color: 'white', width: 2 }),
-                }),
-              })
-            );
-            return feature;
-        });
-
-        // Adiciona tudo de uma vez
-        if (features.length > 0) {
-          hospitalSource.addFeatures(features);
-        }
-
-      } catch (error) {
-        console.error("Erro", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const resizeObserver = new ResizeObserver(() => mapRef.current?.updateSize());
-    resizeObserver.observe(mapElement.current);
-
-    map.on('moveend', () => { 
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      setIsLoading(true); // Loading
-      debounceTimer.current = setTimeout(loadHospitals, 300); 
-    });
-
-    setIsLoading(true);
-    const initTimeout = setTimeout(loadHospitals, 500);
-
+    // Cleanup ao desmontar
     return () => {
-      resizeObserver.disconnect();
-      clearTimeout(initTimeout);
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
       map.setTarget(undefined);
       mapRef.current = null;
     };
   }, []);
 
+  // --- 2. LÓGICA DE NEGÓCIO (Busca e Renderização) ---
+  const fetchAndRenderHospitals = useCallback(async () => {
+    if (!mapRef.current) return;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    mapRef.current.updateSize();
+    const size = mapRef.current.getSize();
+    if (!size || size[0] === 0) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const extent = mapRef.current.getView().calculateExtent(size);
+      const rawData = await fetchHospitalsFromOSM(extent, controller.signal);
+      if (!rawData) return;
+
+      const enrichedData = rawData.map(h => 
+        enrichHospitalData(h, USER_FIXED_LOCATION[1], USER_FIXED_LOCATION[0])
+      );
+
+      setHospitals(enrichedData);
+      if (onHospitalsFound) onHospitalsFound(enrichedData);
+
+      // Atualiza os pinos no mapa
+      hospitalSourceRef.current.clear();
+      const features = enrichedData.map((hospital) => {
+        const feature = new Feature({
+          geometry: new Point(fromLonLat([hospital.coordinates.x, hospital.coordinates.y])),
+          name: hospital.name,
+        });
+        feature.setStyle(createHospitalStyle(hospital.status)); // Usa o helper visual
+        return feature;
+      });
+
+      if (features.length > 0) hospitalSourceRef.current.addFeatures(features);
+
+    } catch (error) {
+      console.error("Erro ao buscar hospitais", error);
+    } finally {
+      if (abortControllerRef.current === controller) {
+        setIsLoading(false);
+      }
+    }
+  }, [onHospitalsFound]);
+
+  // --- 3. GESTÃO DE EVENTOS (Resize e Drag) ---
+  useEffect(() => {
+    if (!mapRef.current || !mapElement.current) return;
+
+    const handleMapUpdate = () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      setIsLoading(true);
+      debounceTimer.current = setTimeout(fetchAndRenderHospitals, 300);
+    };
+
+    // Observer para redimensionamento (Layout Shift)
+    const resizeObserver = new ResizeObserver(() => {
+      mapRef.current?.updateSize();
+      handleMapUpdate();
+    });
+    
+    resizeObserver.observe(mapElement.current);
+    
+    // Listener de movimento do mapa
+    mapRef.current.on('moveend', handleMapUpdate);
+
+    // Carga inicial
+    handleMapUpdate();
+
+    return () => {
+      resizeObserver.disconnect();
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [fetchAndRenderHospitals]);
+
   return (
     <div>
       <Card className="p-0 border-gray-200 overflow-hidden relative">
         <div ref={mapElement} className="w-full h-[500px] bg-gray-100" />
-        
-        <div 
-          ref={tooltipElement} 
-          className="absolute bg-black/80 text-white text-xs px-2 py-1 rounded pointer-events-none hidden z-50 whitespace-nowrap shadow-lg"
-        />
+        <div ref={tooltipElement} className="absolute bg-black/80 text-white text-xs px-2 py-1 rounded pointer-events-none hidden z-50 whitespace-nowrap shadow-lg" />
 
-        {/* Aviso de Carregamento */}
         {isLoading && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md border border-gray-200 flex items-center gap-2 animate-in fade-in zoom-in duration-300">
             <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />

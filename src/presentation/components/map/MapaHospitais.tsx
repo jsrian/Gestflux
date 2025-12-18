@@ -3,7 +3,8 @@ import { useSearchParams } from "react-router-dom"; // Import do React Router
 import HospitaisHeader from "./HospitaisHeader";
 import HospitaisLista from "./HospitaisLista";
 import StatusCards from "./StatusCards";
-import MapaHospitaisMap, { type EnrichedHospital } from "./MapaHospitaisMap";
+import MapaHospitaisMap from "./MapaHospitaisMap";
+import type { EnrichedHospital } from "@/shared/lib/hospitalService";
 
 export default function MapaHospitais() {
   const [hospitalsList, setHospitalsList] = useState<EnrichedHospital[]>([]);
